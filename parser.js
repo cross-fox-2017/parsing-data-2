@@ -40,7 +40,7 @@ class PersonParser {
                     dataPerson.push(new PersonData(tampilData))
                 }).on('end', function(data) {
                     var tambahData = {
-                        id: "209",
+                        id: "203",
                         first_name: "Dila",
                         last_name: "Arista",
                         email: "diladilo@gmail.com",
@@ -80,3 +80,6 @@ class PersonParser {
         jsonfile.writeFile('people.json', dataPerson) // https://www.npmjs.com/package/jsonfile
     }
 }
+
+var parser = new PersonParser('people.csv')
+parser.people
