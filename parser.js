@@ -1,34 +1,88 @@
 "use strict"
+const fs = require('fs')
+const faker = require('faker')
+const yaml = require('js-yaml')
 
 class Person {
-  // Look at the above CSV file
-  // What attributes should a Person object have?
+  constructor(id, firstName, lastName, email, phone){
+    this.id = id,
+    this.firstName = firstName,
+    this.lastName = lastName,
+    this.email = email,
+    this.phone = phone,
+    this.createdAt = new Date()
+  }
 }
-
 class PersonParser {
-
   constructor(file) {
-    this.file = file
-    this.people = []
+    this._file = fs.readFileSync(file, 'utf8');
+    this._name = file;
+    this._people = null;
+    this.parsedFile = [];
+    this.preSavedData = [`id,first_name,last_name,email,phone,created_at\n`]
   }
-
-  get people() {
-    // If we've already parsed the CSV file, don't parse it again.
-    if (this.people)
-      return this.people
-
-    // We've never called people before, now parse the CSV file
-    // and return an Array of Person objects here.  Save the
-    // Array in the this.people instance variable.
+  parseFile(){
+    let result = []
+    this._file = this._file.split("\n")
+    this._file.forEach(function(data){
+      data = data.split("\n");
+        data.forEach(function(val){
+          val = val.split(",")
+          let ini = {
+            id : val[0],
+            firstName : val[1],
+            lastName : val[2],
+            email : val[3],
+            phone : val[4],
+            createdAt : new Date (val[5])
+          }
+          if(ini.id == ""){}else{
+            result.push(ini);
+          }
+        });
+    });
+    return this.parsedFile = result;
   }
-
-  save() {}
-
-  save_as_yaml() {}
-
-  save_as_json() {}
+  get people(){
+    return this.parsedFile;
+  }
+  get file(){
+    return this._name;
+  }
+  addPerson(id, firstName, lastName, email, phone) {
+    this.parsedFile.push(new Person(id, firstName, lastName, email, phone));
+  }
+  formatToString(){
+    for (let i = 1; i < this.parsedFile.length; i++){
+      this.preSavedData.push(
+        this.parsedFile[i].id + "," +
+        this.parsedFile[i].firstName + "," +
+        this.parsedFile[i].lastName + "," +
+        this.parsedFile[i].email + "," +
+        this.parsedFile[i].phone + "," +
+        this.parsedFile[i].createdAt.toJSON() + "\n"
+      )
+    }
+  }
+  saveCsv(){
+    fs.writeFileSync('new-people.csv', this.preSavedData.join(""));
+  }
+  save_as_yaml(){
+    let yamled = yaml.dump(this.preSavedData);
+    fs.writeFileSync('new-people.yaml', yamled);
+  }
+  save_as_json(){
+    let jsoned = this.parsedFile.slice(1)
+    fs.writeFileSync('new-people.json', JSON.stringify(jsoned));
+  }
 }
 
-var parser = new PersonParser('people.csv')
-
-console.log(`There are ${parser.people.size} people in the file '${parser.file}'.`)
+let parser = new PersonParser('new-people.csv')
+parser.parseFile();
+parser.people;
+parser.addPerson(201, faker.name.firstName(), faker.name.lastName(), faker.internet.email(), faker.phone.phoneNumber());
+parser.formatToString()
+parser.saveCsv();
+parser.save_as_yaml()
+parser.save_as_json()
+console.log(`There are ${parser.people.length-1} people in the file '${parser.file}'.`)
