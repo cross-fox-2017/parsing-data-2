@@ -19,7 +19,7 @@ class PersonParser {
     this._name = file;
     this._people = null;
     this.parsedFile = [];
-    this.preSavedData = []
+    this.preSavedData = [`id,first_name,last_name,email,phone,created_at\n`]
   }
   parseFile(){
     let result = []
@@ -36,7 +36,9 @@ class PersonParser {
             phone : val[4],
             createdAt : new Date (val[5])
           }
-          result.push(ini);
+          if(ini.id == ""){}else{
+            result.push(ini);
+          }
         });
     });
     return this.parsedFile = result;
@@ -51,19 +53,19 @@ class PersonParser {
     this.parsedFile.push(new Person(id, firstName, lastName, email, phone));
   }
   formatToString(){
-    for (let i = 0; i < this.parsedFile.length; i++){
+    for (let i = 1; i < this.parsedFile.length; i++){
       this.preSavedData.push(
         this.parsedFile[i].id + "," +
         this.parsedFile[i].firstName + "," +
         this.parsedFile[i].lastName + "," +
         this.parsedFile[i].email + "," +
         this.parsedFile[i].phone + "," +
-        new Date(this.parsedFile[i].createdAt) + "\n"
+        this.parsedFile[i].createdAt.toJSON() + "\n"
       )
     }
   }
   saveCsv(){
-    fs.writeFileSync('new-people.csv', this.preSavedData);
+    fs.writeFileSync('new-people.csv', this.preSavedData.join(""));
   }
   save_as_yaml(){
     let yamled = yaml.dump(this.preSavedData);
@@ -75,8 +77,8 @@ class PersonParser {
   }
 }
 
-let parser = new PersonParser('people.csv')
-console.log(parser.parseFile());
+let parser = new PersonParser('new-people.csv')
+parser.parseFile();
 parser.people;
 parser.addPerson(201, faker.name.firstName(), faker.name.lastName(), faker.internet.email(), faker.phone.phoneNumber());
 parser.formatToString()
